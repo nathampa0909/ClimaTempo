@@ -1,7 +1,33 @@
-﻿@using System.Globalization;
+﻿@model ClimaTempo.Models.DTOEstadoCidadePrevisao
 @{
-    ViewBag.Title = "Clima Temppo";
+    ViewBag.Title = "Clima Tempo";
+
+    var cidadesQuentesHoje = Model.Previsoes.FindAll(p => p.DataPrevisao.Date.Equals(DateTime.Now.Date)).OrderByDescending(p => p.TemperaturaMaxima).Take(3);
+    var cidadesFriasHoje = Model.Previsoes.FindAll(p => p.DataPrevisao.Date.Equals(DateTime.Now.Date)).OrderBy(p => p.TemperaturaMinima).Take(3);
 }
+
+<script>
+    function formateDecimal(valor) {
+        return Math.trunc(valor);
+    }
+
+    $(document).ready(function () {
+        let dropdown = $("#@Html.DisplayNameFor(m => m.CidadeSelecionada)");
+        dropdown.select2({
+            width: "100%",
+            placeholder: "Selecione uma cidade",
+            allowClear: true
+        });
+
+        $('#partialViewClimas').load(`/Home/ObtenhaClimas?cidadeId=${dropdown.val()}`);
+    });
+
+    $(document).change(function () {
+        let dropdown = $("#@Html.DisplayNameFor(m => m.CidadeSelecionada)");
+        $("#partialViewClimas").load(`/Home/ObtenhaClimas?cidadeId=${dropdown.val()}`);
+    });
+
+</script>
 
 <div class="jumbotron">
     <h1>Clima Tempo Simples</h1>
@@ -16,29 +42,20 @@
             </div>
             <div class="panel-body">
 
-                <div class="row">
-                    <div class="col-md-8">
-                        Petrolina
+                @foreach (PrevisaoClima previsao in cidadesQuentesHoje)
+                {
+                    <div class="row">
+                        <div class="col-md-8">
+                            @previsao.Cidade.Nome/@previsao.Cidade.Estado.UF
+                        </div>
+                        <div class="col-md-2">
+                            Min @((int)previsao.TemperaturaMinima)°C
+                        </div>
+                        <div class="col-md-2">
+                            Máx @((int)previsao.TemperaturaMaxima)°C
+                        </div>
                     </div>
-                    <div class="col-md-2">
-                        Min 6°C
-                    </div>
-                    <div class="col-md-2">
-                        Máx 19°C
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-8">
-                        São Paulo
-                    </div>
-                    <div class="col-md-2">
-                        Min 6°C
-                    </div>
-                    <div class="col-md-2">
-                        Máx 19°C
-                    </div>
-                </div>
+                }
 
             </div>
         </div>
@@ -51,29 +68,20 @@
             </div>
             <div class="panel-body">
 
-                <div class="row">
-                    <div class="col-md-8">
-                        Petrolina
+                @foreach (PrevisaoClima previsao in cidadesFriasHoje)
+                {
+                    <div class="row">
+                        <div class="col-md-8">
+                            @previsao.Cidade.Nome/@previsao.Cidade.Estado.UF
+                        </div>
+                        <div class="col-md-2">
+                            Min @((int)previsao.TemperaturaMinima)°C
+                        </div>
+                        <div class="col-md-2">
+                            Máx @((int)previsao.TemperaturaMaxima)°C
+                        </div>
                     </div>
-                    <div class="col-md-2">
-                        Min 6°C
-                    </div>
-                    <div class="col-md-2">
-                        Máx 19°C
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-8">
-                        São Paulo
-                    </div>
-                    <div class="col-md-2">
-                        Min 6°C
-                    </div>
-                    <div class="col-md-2">
-                        Máx 19°C
-                    </div>
-                </div>
+                }
 
             </div>
         </div>
@@ -81,57 +89,12 @@
 </div>
 
 <div class="row">
-    <div class="col-md-8">
-
-    </div>
-
+    <div class="col-md-8"></div>
     <div class="col-md-4">
         <b>Cidade:</b>
         <br />
-        <div class="dropdown">
-            <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true" style="width: 100%">
-                <div class="row">
-                    <div class="col-md-10" style="text-align: left">
-                        Petrópolis
-                    </div>
-
-                    <div class="col-md-2" style="text-align: right">
-                        <span class="glyphicon glyphicon-remove"></span>
-                        <span class="glyphicon glyphicon-triangle-bottom"></span>
-                    </div>
-                </div>
-            </button>
-            <ul class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenu" style="width: 100%">
-                <li><a href="#">Petrolina</a></li>
-                <li><a href="#">São Paulo</a></li>
-            </ul>
-        </div>
+        @Html.DropDownListFor(m => m.CidadeSelecionada, new SelectList(Model.Cidades, "Id", "Nome"))
     </div>
 </div>
 
-<center><h3>Clima para os próximos sete dias na cidade de Petrópolis</h3></center>
-
-<div class="row">
-    @for (var i = 0; i <= 6; i++)
-    {
-        var dateTime = DateTime.Now.AddDays(i);
-        var diaSemanaString = dateTime.ToString("dddd", CultureInfo.GetCultureInfo("pt-BR"));
-
-        <div class="col-md-2" style="float: left; width: 14.2%;">
-            <div class="panel panel-primary">
-                <div class="panel-heading">
-                    <h3 class="panel-title">@diaSemanaString</h3>
-                </div>
-                <div class="panel-body">
-
-                    <span class="glyphicon glyphicon-cloud"></span>
-                    Tempestuoso
-                    <br />
-                    Mínima 6°C
-                    <br />
-                    Máxima 19°C
-                </div>
-            </div>
-        </div>
-    }
-</div>
+<div id="partialViewClimas"></div>
