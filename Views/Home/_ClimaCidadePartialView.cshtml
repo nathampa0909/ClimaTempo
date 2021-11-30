@@ -1,0 +1,46 @@
+﻿@using System.Globalization;
+@model ClimaTempo.Models.DTOEstadoCidadePrevisao
+
+@{
+    var previsoes = Model.Previsoes.FindAll(p => p.DataPrevisao.Date > DateTime.Now.Date).OrderBy(p => p.DataPrevisao).Take(7);
+}
+
+<center><h3>Clima para os próximos sete dias na cidade de @ViewBag.NomeCidade</h3></center>
+
+<div class="row">
+    @{
+        var i = 1;
+        foreach (PrevisaoClima previsao in previsoes)
+        {
+            var dateTime = DateTime.Now.AddDays(i);
+            var diaSemanaString = dateTime.ToString("dddd", CultureInfo.GetCultureInfo("pt-BR"));
+
+            <div class="col-md-2" style="float: left; width: 14.2%;">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">@diaSemanaString</h3>
+                    </div>
+                    <div class="panel-body" style="width: 100%;">
+                        <span class="glyphicon glyphicon-cloud"></span>
+                        @previsao.Clima
+                        <br />
+                        <div id="temperaturaMinima@(i)"></div>
+                        <div id="temperaturaMaxima@(i)"></div>
+                    </div>
+                </div>
+            </div>
+
+            <script>
+                $('#temperaturaMinima@(i)').html(`Mínima: ${formateDecimal(@previsao.TemperaturaMinima)}°C`);
+                $('#temperaturaMaxima@(i)').html(`Máxima: ${formateDecimal(@previsao.TemperaturaMaxima)}°C`);
+            </script>
+
+            i++;
+        }
+
+        if (!previsoes.Any())
+        {
+            <center><p>Nenhum clima encontrado.</p></center>
+        }
+    }
+</div>
